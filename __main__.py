@@ -20,52 +20,66 @@ def data_set_creator():
     #getting the row difference between the two CSV
     count_difference = count_file1[0] - count_file2[0]
     #IMPLEMENT THE COLUMN DIFFERENCE BETWEEN CSV
-    #creating response for which file has more rows 
-    if(count_difference > 0):
-        result['line1'] = '('+files[0]+') has '+str(count_difference)+' more rows then ('+files[1]+')'
-    elif(count_difference < 0):
-        result['line1'] = files[1]+' has '+str(count_difference)+' more rows then '+files[0]
-    else:
-        result['line1'] = "NO MISMATCH"
-    #Need to add a condition to check the columns
-    #finding the difference between file1 and file2 [list(A.columns) gives list of colums]
-    # A - B 
-    only_in_file1 = pd.merge(A, B, on=list(A.columns), how='left', indicator=True).query("_merge == 'left_only'")
-    only_in_file1_count = only_in_file1.shape
-    #finding percentage difference between the two CSV based on rows
-    matched_in_file1_percent = round(((count_file1[0] - only_in_file1_count[0])/count_file1[0])*100)
-    result['line2'] = matched_in_file1_percent
-    #adding additional attribute to json for the HTML page
-    if matched_in_file1_percent != 100:
+    if(list(A.columns) != list(B.columns)):
+        f= open("./output/data.csv","w")
+        result['line1'] = "Column MISMATCH"
+        result['line2'] = 0
         result['line3'] = "Incomplete match"
         result['line3C'] = "red"
+        f.write(files[0] + " --> Extra Columns \n") 
+        for col in list(A.columns):
+            if col not in list(B.columns):
+                f.write(col+"\n")   
+        f.write(files[1] + " --> Extra Columns \n") 
+        for col in list(B.columns):
+            if col not in list(A.columns):
+                f.write(col+"\n")     
     else:
-        result['line3'] = "Complete match"
-        result['line3C'] = "green"
-    #creating data.csv file to get the difference between the two csv in new csv
-    f= open("./output/data.csv","w")
-    f.write(files[0] + " --> Questionable Rows \n")   
-    #writing merge output to the new CSV 
-    only_in_file1.to_csv (f, mode='a', index = None, header=True)
-    f.close()
-    #finding difference between file2 and file1
-    # B - A
-    only_in_file2 = pd.merge(A, B, on=list(A.columns), how='right', indicator=True).query("_merge == 'right_only'")
-    print(only_in_file2)
-    only_in_file2_count = only_in_file2.shape
-    #finding percentage difference between the two CSV based on rows
-    matched_in_file2_percent = round(((count_file2[0] - only_in_file2_count[0])/count_file2[0])*100)
-    f= open("./output/data.csv","a")
-    f.write(files[1] + " --> Questionable Rows \n")
-    only_in_file2.to_csv (f, mode='a', index = None, header=True)
-    print(matched_in_file2_percent)
-    result['line4'] = matched_in_file2_percent
-    if matched_in_file2_percent != 100:
-        result['line5'] = "Incomplete match"
-        result['line5C'] = "red"
-    else:
-        result['line5'] = "Complete match"
-        result['line5C'] = "green"
+        #creating response for which file has more rows 
+        if(count_difference > 0):
+            result['line1'] = '('+files[0]+') has '+str(count_difference)+' more rows then ('+files[1]+')'
+        elif(count_difference < 0):
+            result['line1'] = files[1]+' has '+str(count_difference)+' more rows then '+files[0]
+        else:
+            result['line1'] = "NO MISMATCH"
+        #finding the difference between file1 and file2 [list(A.columns) gives list of colums]
+        # A - B 
+        only_in_file1 = pd.merge(A, B, on=list(A.columns), how='left', indicator=True).query("_merge == 'left_only'")
+        only_in_file1_count = only_in_file1.shape
+        #finding percentage difference between the two CSV based on rows
+        matched_in_file1_percent = round(((count_file1[0] - only_in_file1_count[0])/count_file1[0])*100)
+        result['line2'] = matched_in_file1_percent
+        #adding additional attribute to json for the HTML page
+        if matched_in_file1_percent != 100:
+            result['line3'] = "Incomplete match"
+            result['line3C'] = "red"
+        else:
+            result['line3'] = "Complete match"
+            result['line3C'] = "green"
+        #creating data.csv file to get the difference between the two csv in new csv
+        f= open("./output/data.csv","w")
+        f.write(files[0] + " --> Questionable Rows \n")   
+        #writing merge output to the new CSV 
+        only_in_file1.to_csv (f, mode='a', index = None, header=True)
+        f.close()
+       #finding difference between file2 and file1
+       # B - A
+        only_in_file2 = pd.merge(A, B, on=list(B.columns), how='right', indicator=True).query("_merge == 'right_only'")
+        print(only_in_file2)
+        only_in_file2_count = only_in_file2.shape
+        #finding percentage difference between the two CSV based on rows
+        matched_in_file2_percent = round(((count_file2[0] - only_in_file2_count[0])/count_file2[0])*100)
+        f= open("./output/data.csv","a")
+        f.write(files[1] + " --> Questionable Rows \n")
+        only_in_file2.to_csv (f, mode='a', index = None, header=True)
+        print(matched_in_file2_percent)
+        result['line4'] = matched_in_file2_percent
+        if matched_in_file2_percent != 100:
+            result['line5'] = "Incomplete match"
+            result['line5C'] = "red"
+        else:
+            result['line5'] = "Complete match"
+            result['line5C'] = "green"
     f.close()
     #creating the final data csv whiching going to be used to display in HTML
     f= open("./output/data.csv","r")

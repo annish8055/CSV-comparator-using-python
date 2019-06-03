@@ -48,14 +48,6 @@ def data_set_creator():
         only_in_file1_count = only_in_file1.shape
         #finding percentage difference between the two CSV based on rows
         matched_in_file1_percent = round(((count_file1[0] - only_in_file1_count[0])/count_file1[0])*100)
-        result['line2'] = matched_in_file1_percent
-        #adding additional attribute to json for the HTML page
-        if matched_in_file1_percent != 100:
-            result['line3'] = "Incomplete match"
-            result['line3C'] = "red"
-        else:
-            result['line3'] = "Complete match"
-            result['line3C'] = "green"
         #creating data.csv file to get the difference between the two csv in new csv
         f= open("./output/data.csv","w")
         f.write(files[0] + " --> Questionable Rows \n")   
@@ -73,13 +65,15 @@ def data_set_creator():
         f.write(files[1] + " --> Questionable Rows \n")
         only_in_file2.to_csv (f, mode='a', index = None, header=True)
         print(matched_in_file2_percent)
-        result['line4'] = matched_in_file2_percent
+        #percentage match average
+        result['line2'] = (matched_in_file1_percent + matched_in_file2_percent)/2
+        #adding additional attribute to json for the HTML page
         if matched_in_file2_percent != 100:
-            result['line5'] = "Incomplete match"
-            result['line5C'] = "red"
+            result['line3'] = "Incomplete match"
+            result['line3C'] = "red"
         else:
-            result['line5'] = "Complete match"
-            result['line5C'] = "green"
+            result['line3'] = "Complete match"
+            result['line3C'] = "green"
     f.close()
     #creating the final data csv whiching going to be used to display in HTML
     f= open("./output/data.csv","r")
